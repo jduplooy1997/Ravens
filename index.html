@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSON Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        header {
+            background: linear-gradient(90deg, #0d6efd, #0a58ca);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        footer {
+            background-color: #212529;
+            color: white;
+            padding: 1rem 0;
+            margin-top: 3rem;
+        }
+
+        .json-card {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .json-card:hover {
+            transform: scale(1.02);
+        }
+
+        pre {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="text-center">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    
+    <a class="navbar-brand fw-bold" href="index.html">
+      Ravens Senior In-House Championship 2026
+    </a>
+
+    <button class="navbar-toggler" type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto">
+
+        <li class="nav-item">
+          <a class="nav-link active" href="index.html">
+            Ranking
+          </a>
+        </li>
+
+        
+
+        <li class="nav-item">
+          <a class="nav-link" href="matches.html">
+            Matches
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="schedule.html">
+            Schedule
+          </a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+    <div class="page-title d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+      <div>
+        <h1 class="h3 mb-0">Ranking</h1>
+      </div>
+
+      <div class="d-flex gap-2">
+        <input id="searchInput" class="form-control" style="max-width: 320px;" type="search"
+               placeholder="Search by id or name..." />
+        <button id="resetBtn" class="btn btn-outline-secondary">Reset</button>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th data-key="id">ID <span class="sort-indicator" id="sort-id"></span></th>
+                <th data-key="Name">Name <span class="sort-indicator" id="sort-Name"></span></th>
+                <th data-key="played">Played <span class="sort-indicator" id="sort-played"></span></th>
+                <th data-key="wins">Wins <span class="sort-indicator" id="sort-wins"></span></th>
+                <th data-key="losses">Losses <span class="sort-indicator" id="sort-losses"></span></th>
+                <th data-key="for">For <span class="sort-indicator" id="sort-for"></span></th>
+                <th data-key="against">Against <span class="sort-indicator" id="sort-against"></span></th>
+                <th data-key="average">Average <span class="sort-indicator" id="sort-average"></span></th>
+                <th data-key="points">Points <span class="sort-indicator" id="sort-points"></span></th>
+              </tr>
+            </thead>
+            <tbody id="playersTbody">
+              <tr><td colspan="9" class="text-muted">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <small>&copy; Ravens In-House 2026</small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    let allPlayers = [];
+    let filteredPlayers = [];
+
+    function num(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    // points desc, average desc, id asc
+    function leaderboardSort(a, b) {
+      const p = num(b.points) - num(a.points);
+      if (p !== 0) return p;
+
+      const avg = num(b.average) - num(a.average);
+      if (avg !== 0) return avg;
+
+      // ID asc (A, B, C...); robust to longer IDs too
+      return String(a.id).localeCompare(String(b.id), undefined, { numeric: true, sensitivity: "base" });
+    }
+
+    function render(players) {
+      const tbody = document.getElementById("playersTbody");
+
+      if (!players.length) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-muted">No players match your search.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = players.map(p => `
+        <tr>
+          <td class="mono fw-semibold">${p.id ?? ""}</td>
+          <td>${p.Name ?? ""}</td>
+          <td>${num(p.played)}</td>
+          <td>${num(p.wins)}</td>
+          <td>${num(p.losses)}</td>
+          <td>${num(p["for"])}</td>
+          <td>${num(p.against)}</td>
+          <td>${num(p.average)}</td>
+          <td class="fw-semibold">${num(p.points)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function applySearch(query) {
+      const q = query.trim().toLowerCase();
+
+      if (!q) {
+        filteredPlayers = [...allPlayers];
+      } else {
+        filteredPlayers = allPlayers.filter(p =>
+          String(p.id ?? "").toLowerCase().includes(q) ||
+          String(p.Name ?? "").toLowerCase().includes(q)
+        );
+      }
+
+      filteredPlayers.sort(leaderboardSort);
+      render(filteredPlayers);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      applySearch(e.target.value);
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      applySearch("");
+    });
+
+    async function loadPlayers() {
+      try {
+        const res = await fetch("players.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("players.json must be a top-level array.");
+        }
+
+        allPlayers = data;
+        applySearch("");
+      } catch (err) {
+        document.getElementById("playersTbody").innerHTML =
+          `<tr><td colspan="9" class="text-danger">Failed to load players.json: ${err.message}</td></tr>`;
+        console.error(err);
+      }
+    }
+
+    loadPlayers();
+  </script>
+
+</body>
+</html>

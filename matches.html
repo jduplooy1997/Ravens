@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSON Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+      .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+        body {
+            background-color: #f8f9fa;
+        }
+
+        header {
+            background: linear-gradient(90deg, #0d6efd, #0a58ca);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        footer {
+            background-color: #212529;
+            color: white;
+            padding: 1rem 0;
+            margin-top: 3rem;
+        }
+
+        .json-card {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .json-card:hover {
+            transform: scale(1.02);
+        }
+
+        pre {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        /* Make the table area vertically scrollable so sticky header works nicely */
+.table-scroll {
+  max-height: 70vh;              /* adjust to taste */
+  overflow: auto;                /* enables vertical + horizontal scroll */
+}
+
+/* Sticky header */
+#matchesTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;                    /* above body cells */
+  background-color: #f8f9fa;     /* solid header background */
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1); /* subtle divider */
+}
+
+/* Keep header background solid while sticky */
+#matchesTable thead th {
+  background: var(--bs-table-bg);
+}
+
+/* Top horizontal scroller */
+.top-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 16px;                  /* scrollbar height */
+}
+
+/* This inner div sets the scrollable width */
+.top-scroll-inner {
+  height: 1px;                   /* minimal height; width set by JS */
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="text-center">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    
+    <a class="navbar-brand fw-bold" href="index.html">
+      Ravens Senior In-House Championship 2026
+    </a>
+
+    <button class="navbar-toggler" type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto">
+
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">
+            Ranking
+          </a>
+        </li>
+
+        
+
+        <li class="nav-item">
+          <a class="nav-link active" href="matches.html">
+            Matches
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="schedule.html">
+            Schedule
+          </a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+  <div class="page-title d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+    <div>
+      <h1 class="h3 mb-0">Matches</h1>
+      
+    </div>
+
+    <div class="d-flex gap-2">
+      <input id="searchInput" class="form-control" style="max-width: 380px;" type="search"
+             placeholder="Search match id, player id, or name..." />
+      <button id="resetBtn" class="btn btn-outline-secondary">Reset</button>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-wrap">
+  <!-- Top horizontal scrollbar (synced) -->
+  <div class="top-scroll" id="topScroll">
+    <div class="top-scroll-inner" id="topScrollInner"></div>
+  </div>
+
+  <!-- Actual scroll container -->
+  <div class="table-responsive table-scroll" id="tableScroll">
+    <table class="table table-hover align-middle mb-0" id="matchesTable">
+      <thead class="table-light">
+        <tr>
+          <th>Match ID</th>
+          <th>Player A ID</th>
+          <th>Player A Name</th>
+          <th>Player B ID</th>
+          <th>Player B Name</th>
+
+          <th>A Set 1</th>
+          <th>B Set 1</th>
+          <th>A Set 2</th>
+          <th>B Set 2</th>
+          <th>A Set 3</th>
+          <th>B Set 3</th>
+          <th>A Set 4</th>
+          <th>B Set 4</th>
+          <th>A Set 5</th>
+          <th>B Set 5</th>
+
+          <th>Player A Sets</th>
+          <th>Player B Sets</th>
+
+          <th>Winner ID</th>
+          <th>Winner Name</th>
+        </tr>
+      </thead>
+      <tbody id="matchesTbody">
+        <tr><td colspan="19" class="text-muted">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+    </div>
+  </div>
+</main>
+
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <small>&copy; Ravens In-House 2026</small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+  // --- State ---
+  let playersById = new Map();  // id -> Name
+  let allMatches = [];
+  let filteredMatches = [];
+
+  // --- Helpers ---
+  function dashIfNull(v) {
+    return (v === null || v === undefined || v === "") ? "—" : String(v);
+  }
+
+  function nameFromId(id) {
+    const key = (id === null || id === undefined) ? "" : String(id);
+    return playersById.get(key) || "—";
+  }
+
+  // Minimal, deterministic ordering:
+  // MatchID asc (you didn't specify sorting rules here; this is sane + stable)
+  function matchSort(a, b) {
+    return Number(a.MatchID) - Number(b.MatchID);
+  }
+
+  function render(matches) {
+    const tbody = document.getElementById("matchesTbody");
+
+    if (!matches.length) {
+      tbody.innerHTML = `<tr><td colspan="19" class="text-muted">No matches match your search.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = matches.map(m => {
+      const aId = m.PlayerAID;
+      const bId = m.PlayerBID;
+      const wId = m.winnerID;
+
+      return `
+        <tr>
+          <td class="mono fw-semibold">${dashIfNull(m.MatchID)}</td>
+
+          <td class="mono">${dashIfNull(aId)}</td>
+          <td>${dashIfNull(nameFromId(aId))}</td>
+
+          <td class="mono">${dashIfNull(bId)}</td>
+          <td>${dashIfNull(nameFromId(bId))}</td>
+
+          <td>${dashIfNull(m.playerASet1)}</td>
+          <td>${dashIfNull(m.playerBSet1)}</td>
+
+          <td>${dashIfNull(m.playerASet2)}</td>
+          <td>${dashIfNull(m.playerBSet2)}</td>
+
+          <td>${dashIfNull(m.playerASet3)}</td>
+          <td>${dashIfNull(m.playerBSet3)}</td>
+
+          <td>${dashIfNull(m.playerASet4)}</td>
+          <td>${dashIfNull(m.playerBSet4)}</td>
+
+          <td>${dashIfNull(m.playerASet5)}</td>
+          <td>${dashIfNull(m.playerBSet5)}</td>
+
+          <td class="fw-semibold">${dashIfNull(m.playerASets)}</td>
+          <td class="fw-semibold">${dashIfNull(m.playerBSets)}</td>
+
+          <td class="mono">${dashIfNull(wId)}</td>
+          <td>${dashIfNull(nameFromId(wId))}</td>
+        </tr>
+      `;
+    }).join("");
+    
+  }
+
+  function applySearch(query) {
+    const q = query.trim().toLowerCase();
+
+    if (!q) {
+      filteredMatches = [...allMatches];
+    } else {
+      filteredMatches = allMatches.filter(m => {
+        const aId = String(m.PlayerAID ?? "").toLowerCase();
+        const bId = String(m.PlayerBID ?? "").toLowerCase();
+        const wId = String(m.winnerID ?? "").toLowerCase();
+
+        const aName = String(nameFromId(m.PlayerAID) ?? "").toLowerCase();
+        const bName = String(nameFromId(m.PlayerBID) ?? "").toLowerCase();
+        const wName = String(nameFromId(m.winnerID) ?? "").toLowerCase();
+
+        return (
+          String(m.MatchID ?? "").toLowerCase().includes(q) ||
+          aId.includes(q) || bId.includes(q) || wId.includes(q) ||
+          aName.includes(q) || bName.includes(q) || wName.includes(q)
+        );
+      });
+    }
+
+    filteredMatches.sort(matchSort);
+    render(filteredMatches);
+  }
+
+  document.getElementById("searchInput").addEventListener("input", (e) => applySearch(e.target.value));
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").value = "";
+    applySearch("");
+  });
+
+  async function loadJson(path) {
+    const res = await fetch(path, { cache: "no-store" });
+    if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
+    return res.json();
+  }
+
+  async function init() {
+    try {
+      const [players, matches] = await Promise.all([
+        loadJson("players.json"),
+        loadJson("matches.json")
+      ]);
+
+      if (!Array.isArray(players)) throw new Error("players.json must be a top-level array.");
+      if (!Array.isArray(matches)) throw new Error("matches.json must be a top-level array.");
+
+      // Build dictionary once
+      playersById = new Map(players.map(p => [String(p.id), String(p.Name)]));
+
+      allMatches = matches.filter(m =>
+  m.winnerID !== null &&
+  m.winnerID !== undefined &&
+  String(m.winnerID).trim() !== ""
+);;
+      applySearch(""); // initial render
+      setupTopScrollbar();
+    } catch (err) {
+      document.getElementById("matchesTbody").innerHTML =
+        `<tr><td colspan="19" class="text-danger">Failed to load data: ${err.message}</td></tr>`;
+      console.error(err);
+    }
+  }
+
+  init();
+</script>
+<script>
+  let topScrollbarInitialized = false;
+
+  function setupTopScrollbar() {
+    const topScroll = document.getElementById("topScroll");
+    const topScrollInner = document.getElementById("topScrollInner");
+    const tableScroll = document.getElementById("tableScroll");
+    const table = document.getElementById("matchesTable");
+
+    if (!topScroll || !topScrollInner || !tableScroll || !table) return;
+
+    const syncWidth = () => {
+      topScrollInner.style.width = table.scrollWidth + "px";
+    };
+
+    // Attach listeners ONLY ONCE
+    if (!topScrollbarInitialized) {
+      let syncing = false;
+
+      topScroll.addEventListener("scroll", () => {
+        if (syncing) return;
+        syncing = true;
+        tableScroll.scrollLeft = topScroll.scrollLeft;
+        syncing = false;
+      });
+
+      tableScroll.addEventListener("scroll", () => {
+        if (syncing) return;
+        syncing = true;
+        topScroll.scrollLeft = tableScroll.scrollLeft;
+        syncing = false;
+      });
+
+      window.addEventListener("resize", syncWidth);
+
+      // Observe size changes of the table (best) to keep widths accurate
+      if ("ResizeObserver" in window) {
+        const ro = new ResizeObserver(() => syncWidth());
+        ro.observe(table);
+      }
+
+      topScrollbarInitialized = true;
+    }
+
+    // Always run width sync after render/layout
+    syncWidth();
+    requestAnimationFrame(syncWidth);
+  }
+</script>
+
+
+
+</body>
+</html>

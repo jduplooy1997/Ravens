@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Schedule</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <style>
+    body { background-color: #f8f9fa; }
+
+    header {
+      background: linear-gradient(90deg, #0d6efd, #0a58ca);
+      color: white;
+      padding: 0;               /* navbar handles padding */
+      margin-bottom: 2rem;
+    }
+
+    footer {
+      background-color: #212529;
+      color: white;
+      padding: 1rem 0;
+      margin-top: 3rem;
+    }
+
+    .page-title { margin: 1.25rem 0 1rem 0; }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    /* Scroll container so sticky header is consistent */
+    .table-scroll {
+      max-height: 70vh;
+      overflow: auto;
+    }
+
+    /* Sticky header */
+    #scheduleTable thead th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background-color: #f8f9fa; /* solid */
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1);
+      white-space: nowrap;
+    }
+
+    /* Top horizontal scroller */
+    .top-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 18px;
+    }
+
+    .top-scroll-inner {
+      height: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header / Navbar -->
+  <header class="text-center">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html">Ravens Senior In-House Championship 2026</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Ranking</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="matches.html">Matches</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="schedule.html">Schedule</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="container">
+    <div class="page-title d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+      <div>
+        <h1 class="h3 mb-0">Schedule</h1>
+        <div class="text-muted">Match list (names resolved from <span class="mono">players.json</span>)</div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <input id="searchInput" class="form-control" style="max-width: 420px;" type="search"
+               placeholder="Search round, time, table, player id/name..." />
+        <button id="resetBtn" class="btn btn-outline-secondary">Reset</button>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="table-wrap">
+          <!-- Top horizontal scrollbar -->
+          <div class="top-scroll" id="topScroll">
+            <div class="top-scroll-inner" id="topScrollInner"></div>
+          </div>
+
+          <!-- Actual scroll container -->
+          <div class="table-responsive table-scroll" id="tableScroll">
+            <table class="table table-hover align-middle mb-0" id="scheduleTable">
+              <thead class="table-light">
+                <tr>
+                  <th>Match ID</th>
+                  <th>Round</th>
+                  <th>Time</th>
+                  <th>Table</th>
+                  <th>Player A ID</th>
+                  <th>Player A Name</th>
+                  <th>Player B ID</th>
+                  <th>Player B Name</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleTbody">
+                <tr><td colspan="8" class="text-muted">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center">
+    <div class="container">
+      <small>&copy; Ravens In-House 2026</small>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // --- State ---
+    let playersById = new Map();  // id -> Name
+    let allMatches = [];
+    let filtered = [];
+
+    // --- Helpers ---
+    function dashIfNull(v) {
+      return (v === null || v === undefined || v === "") ? "—" : String(v);
+    }
+
+    function nameFromId(id) {
+      const key = (id === null || id === undefined) ? "" : String(id);
+      return playersById.get(key) || "—";
+    }
+
+    // Schedule ordering: Round asc, Time asc (string), Table asc, MatchID asc
+    function scheduleSort(a, b) {
+      const r = Number(a.Round) - Number(b.Round);
+      if (r !== 0) return r;
+
+      const tc = String(a.Time ?? "").localeCompare(String(b.Time ?? ""), undefined, { sensitivity: "base" });
+      if (tc !== 0) return tc;
+
+      const t = Number(a.Table) - Number(b.Table);
+      if (t !== 0) return t;
+
+      return Number(a.MatchID) - Number(b.MatchID);
+    }
+
+    function render(rows) {
+      const tbody = document.getElementById("scheduleTbody");
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-muted">No matches match your search.</td></tr>`;
+        setupTopScrollbar(); // keep scroller synced even when empty
+        return;
+      }
+
+      tbody.innerHTML = rows.map(m => {
+        const aId = m.PlayerAID;
+        const bId = m.PlayerBID;
+
+        return `
+          <tr>
+            <td class="mono fw-semibold">${dashIfNull(m.MatchID)}</td>
+            <td class="mono">${dashIfNull(m.Round)}</td>
+            <td>${dashIfNull(m.Time)}</td>
+            <td class="mono">${dashIfNull(m.Table)}</td>
+            <td class="mono">${dashIfNull(aId)}</td>
+            <td>${dashIfNull(nameFromId(aId))}</td>
+            <td class="mono">${dashIfNull(bId)}</td>
+            <td>${dashIfNull(nameFromId(bId))}</td>
+          </tr>
+        `;
+      }).join("");
+
+      setupTopScrollbar();
+    }
+
+    function applySearch(query) {
+      const q = query.trim().toLowerCase();
+
+      if (!q) {
+        filtered = [...allMatches];
+      } else {
+        filtered = allMatches.filter(m => {
+          const aId = String(m.PlayerAID ?? "").toLowerCase();
+          const bId = String(m.PlayerBID ?? "").toLowerCase();
+
+          const aName = String(nameFromId(m.PlayerAID) ?? "").toLowerCase();
+          const bName = String(nameFromId(m.PlayerBID) ?? "").toLowerCase();
+
+          return (
+            String(m.MatchID ?? "").toLowerCase().includes(q) ||
+            String(m.Round ?? "").toLowerCase().includes(q) ||
+            String(m.Table ?? "").toLowerCase().includes(q) ||
+            String(m.Time ?? "").toLowerCase().includes(q) ||
+            aId.includes(q) || bId.includes(q) ||
+            aName.includes(q) || bName.includes(q)
+          );
+        });
+      }
+
+      filtered.sort(scheduleSort);
+      render(filtered);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", (e) => applySearch(e.target.value));
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      applySearch("");
+    });
+
+    async function loadJson(path) {
+      const res = await fetch(path, { cache: "no-store" });
+      if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
+      return res.json();
+    }
+
+    async function init() {
+      try {
+        const [players, matches] = await Promise.all([
+          loadJson("players.json"),
+          loadJson("matches.json")
+        ]);
+
+        if (!Array.isArray(players)) throw new Error("players.json must be a top-level array.");
+        if (!Array.isArray(matches)) throw new Error("matches.json must be a top-level array.");
+
+        playersById = new Map(players.map(p => [String(p.id), String(p.Name)]));
+
+        allMatches = matches;
+        applySearch("");
+      } catch (err) {
+        document.getElementById("scheduleTbody").innerHTML =
+          `<tr><td colspan="8" class="text-danger">Failed to load data: ${err.message}</td></tr>`;
+        console.error(err);
+        setupTopScrollbar();
+      }
+    }
+
+    // --- Top scrollbar sync (init once) ---
+    let topScrollbarInitialized = false;
+
+    function setupTopScrollbar() {
+      const topScroll = document.getElementById("topScroll");
+      const topScrollInner = document.getElementById("topScrollInner");
+      const tableScroll = document.getElementById("tableScroll");
+      const table = document.getElementById("scheduleTable");
+
+      if (!topScroll || !topScrollInner || !tableScroll || !table) return;
+
+      const syncWidth = () => {
+        topScrollInner.style.width = table.scrollWidth + "px";
+      };
+
+      if (!topScrollbarInitialized) {
+        let syncing = false;
+
+        topScroll.addEventListener("scroll", () => {
+          if (syncing) return;
+          syncing = true;
+          tableScroll.scrollLeft = topScroll.scrollLeft;
+          syncing = false;
+        });
+
+        tableScroll.addEventListener("scroll", () => {
+          if (syncing) return;
+          syncing = true;
+          topScroll.scrollLeft = tableScroll.scrollLeft;
+          syncing = false;
+        });
+
+        window.addEventListener("resize", syncWidth);
+
+        if ("ResizeObserver" in window) {
+          const ro = new ResizeObserver(() => syncWidth());
+          ro.observe(table);
+        }
+
+        topScrollbarInitialized = true;
+      }
+
+      syncWidth();
+      requestAnimationFrame(syncWidth);
+    }
+
+    init();
+  </script>
+</body>
+</html>
