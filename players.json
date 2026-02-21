@@ -2,13 +2,13 @@
   {
     "id": "A",
     "Name": "Kirshwan \"Kirsh\" Steyn",
-    "played": 2,
+    "played": 0,
     "wins": 0,
-    "losses": 2,
+    "losses": 0,
     "for": 0,
     "against": 0,
     "average": 0,
-    "points": 2
+    "points": 0
   },
   {
     "id": "B",
@@ -123,23 +123,23 @@
   {
     "id": "L",
     "Name": "Gideon \"Giddy\" Stompies",
-    "played": 1,
+    "played": 0,
     "wins": 0,
     "losses": 0,
     "for": 0,
     "against": 0,
     "average": 0,
-    "points": 1
+    "points": 0
   },
   {
     "id": "M",
     "Name": "Jordan Martin",
-    "played": 1,
+    "played": 0,
     "wins": 0,
     "losses": 0,
     "for": 0,
     "against": 0,
     "average": 0,
-    "points": 1
+    "points": 0
   }
 ]
