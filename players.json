@@ -3,12 +3,12 @@
     "id": "A",
     "Name": "Kirshwan \"Kirsh\" Steyn",
     "played": 2,
-    "wins": 1,
-    "losses": 1,
-    "for": 5,
-    "against": 4,
-    "average": 1,
-    "points": 4
+    "wins": 0,
+    "losses": 2,
+    "for": 0,
+    "against": 0,
+    "average": 0,
+    "points": 2
   },
   {
     "id": "B",
@@ -124,12 +124,12 @@
     "id": "L",
     "Name": "Gideon \"Giddy\" Stompies",
     "played": 1,
-    "wins": 1,
+    "wins": 0,
     "losses": 0,
-    "for": 3,
-    "against": 2,
-    "average": 1,
-    "points": 3
+    "for": 0,
+    "against": 0,
+    "average": 0,
+    "points": 1
   },
   {
     "id": "M",
@@ -137,9 +137,9 @@
     "played": 1,
     "wins": 0,
     "losses": 0,
-    "for": 1,
-    "against": 3,
-    "average": -2,
+    "for": 0,
+    "against": 0,
+    "average": 0,
     "points": 1
   }
 ]
