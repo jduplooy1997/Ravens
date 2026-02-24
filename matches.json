@@ -126,7 +126,7 @@
     "playerBSets": 1,
     "winnerID": "D",
     "Set1Loser": "J",
-    "Set2Loser": "J",
+    "Set2Loser": "D",
     "Set3Loser": "J",
     "Set4Loser": "J",
     "Set5Loser": ""
@@ -192,7 +192,7 @@
     "playerBSets": 1,
     "winnerID": "F",
     "Set1Loser": "H",
-    "Set2Loser": "H",
+    "Set2Loser": "F",
     "Set3Loser": "H",
     "Set4Loser": "H",
     "Set5Loser": ""
@@ -324,7 +324,7 @@
     "playerBSets": 1,
     "winnerID": "D",
     "Set1Loser": "I",
-    "Set2Loser": "I",
+    "Set2Loser": "D",
     "Set3Loser": "I",
     "Set4Loser": "I",
     "Set5Loser": ""
@@ -522,7 +522,7 @@
     "playerBSets": 2,
     "winnerID": "D",
     "Set1Loser": "H",
-    "Set2Loser": "H",
+    "Set2Loser": "D",
     "Set3Loser": "H",
     "Set4Loser": "D",
     "Set5Loser": "H"
@@ -786,7 +786,7 @@
     "playerBSets": 1,
     "winnerID": "K",
     "Set1Loser": "M",
-    "Set2Loser": "K",
+    "Set2Loser": "M",
     "Set3Loser": "K",
     "Set4Loser": "M",
     "Set5Loser": ""
@@ -852,7 +852,7 @@
     "playerBSets": 1,
     "winnerID": "B",
     "Set1Loser": "H",
-    "Set2Loser": "B",
+    "Set2Loser": "H",
     "Set3Loser": "B",
     "Set4Loser": "H",
     "Set5Loser": ""
@@ -918,7 +918,7 @@
     "playerBSets": 3,
     "winnerID": "F",
     "Set1Loser": "D",
-    "Set2Loser": "F",
+    "Set2Loser": "D",
     "Set3Loser": "F",
     "Set4Loser": "D",
     "Set5Loser": ""
@@ -984,7 +984,7 @@
     "playerBSets": 3,
     "winnerID": "L",
     "Set1Loser": "K",
-    "Set2Loser": "L",
+    "Set2Loser": "K",
     "Set3Loser": "L",
     "Set4Loser": "K",
     "Set5Loser": ""
