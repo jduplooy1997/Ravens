@@ -2,68 +2,68 @@
   {
     "id": "A",
     "Name": "Kirshwan \"Kirsh\" Steyn",
-    "played": 9,
-    "wins": 9,
+    "played": 12,
+    "wins": 12,
     "losses": 0,
-    "for": 27,
-    "against": 1,
-    "average": 26,
-    "points": 27
+    "for": 36,
+    "against": 5,
+    "average": 31,
+    "points": 36
   },
   {
     "id": "B",
     "Name": "Joshua \"The Topspin Assassin\" Du Plooy",
-    "played": 9,
-    "wins": 8,
+    "played": 12,
+    "wins": 10,
     "losses": 0,
-    "for": 25,
-    "against": 7,
-    "average": 18,
-    "points": 25
+    "for": 31,
+    "against": 10,
+    "average": 21,
+    "points": 32
   },
   {
     "id": "C",
     "Name": "Frans \"Whisperer\" Erasmus ",
-    "played": 8,
-    "wins": 8,
+    "played": 12,
+    "wins": 10,
     "losses": 0,
-    "for": 24,
-    "against": 1,
-    "average": 23,
-    "points": 24
+    "for": 32,
+    "against": 7,
+    "average": 25,
+    "points": 32
   },
   {
     "id": "D",
     "Name": "Demos \"D\" Dracoulides",
-    "played": 8,
-    "wins": 5,
+    "played": 12,
+    "wins": 8,
     "losses": 0,
-    "for": 17,
-    "against": 13,
-    "average": 4,
-    "points": 18
+    "for": 28,
+    "against": 16,
+    "average": 12,
+    "points": 28
   },
   {
     "id": "E",
     "Name": "Darren \"The Raven\" Orr",
-    "played": 8,
-    "wins": 5,
+    "played": 11,
+    "wins": 9,
     "losses": 0,
-    "for": 16,
+    "for": 28,
     "against": 11,
-    "average": 5,
-    "points": 18
+    "average": 17,
+    "points": 29
   },
   {
     "id": "F",
     "Name": "Ezra \"Ezra\" Msindeni",
-    "played": 7,
-    "wins": 4,
+    "played": 11,
+    "wins": 8,
     "losses": 0,
-    "for": 13,
-    "against": 14,
-    "average": -1,
-    "points": 15
+    "for": 25,
+    "against": 16,
+    "average": 9,
+    "points": 27
   },
   {
     "id": "G",
@@ -72,20 +72,20 @@
     "wins": 0,
     "losses": 0,
     "for": 0,
-    "against": 24,
-    "average": -24,
+    "against": 33,
+    "average": -33,
     "points": 0
   },
   {
     "id": "H",
     "Name": "Richard Prince \"Choppie\" Ntamutumba",
-    "played": 9,
-    "wins": 3,
+    "played": 12,
+    "wins": 6,
     "losses": 0,
-    "for": 14,
-    "against": 20,
-    "average": -6,
-    "points": 15
+    "for": 23,
+    "against": 22,
+    "average": 1,
+    "points": 24
   },
   {
     "id": "I",
@@ -94,42 +94,42 @@
     "wins": 3,
     "losses": 0,
     "for": 12,
-    "against": 19,
-    "average": -7,
+    "against": 25,
+    "average": -13,
     "points": 15
   },
   {
     "id": "J",
     "Name": "Angeline \"Annie\" Wood",
-    "played": 8,
-    "wins": 4,
+    "played": 12,
+    "wins": 5,
     "losses": 0,
-    "for": 13,
-    "against": 15,
-    "average": -2,
-    "points": 16
+    "for": 19,
+    "against": 24,
+    "average": -5,
+    "points": 22
   },
   {
     "id": "K",
     "Name": "Aiden \"Sancho25\" Oransie",
-    "played": 8,
-    "wins": 1,
+    "played": 12,
+    "wins": 2,
     "losses": 0,
-    "for": 5,
-    "against": 22,
-    "average": -17,
-    "points": 10
+    "for": 9,
+    "against": 31,
+    "average": -22,
+    "points": 16
   },
   {
     "id": "L",
     "Name": "Gideon \"Giddy\" Stompies",
-    "played": 8,
+    "played": 11,
     "wins": 3,
     "losses": 0,
     "for": 13,
-    "against": 16,
-    "average": -3,
-    "points": 14
+    "against": 28,
+    "average": -15,
+    "points": 17
   },
   {
     "id": "M",
@@ -138,8 +138,8 @@
     "wins": 1,
     "losses": 0,
     "for": 5,
-    "against": 21,
-    "average": -16,
+    "against": 33,
+    "average": -28,
     "points": 10
   }
 ]
